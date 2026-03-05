@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Trash2, ChevronDown, ChevronUp, Search, Clock, Bot } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
-import { getHistory, clearHistory, HistoryEntry } from '../../lib/api'
+import { getHistory, clearHistory, HistoryEntry } from '@/lib/api'
 
 function AgentReport({ label, content, color }: { label: string; content: string; color: string }) {
   const [open, setOpen] = useState(false)
@@ -28,10 +28,10 @@ function AgentReport({ label, content, color }: { label: string; content: string
   )
 }
 
-export default function HistoryPage() {
-  const [history, setHistory]       = useState<HistoryEntry[]>([])
-  const [search, setSearch]         = useState('')
-  const [selected, setSelected]     = useState<string | null>(null)
+function HistoryContent() {
+  const [history, setHistory]     = useState<HistoryEntry[]>([])
+  const [search, setSearch]       = useState('')
+  const [selected, setSelected]   = useState<string | null>(null)
   const params = useSearchParams()
 
   useEffect(() => {
@@ -55,7 +55,6 @@ export default function HistoryPage() {
 
   return (
     <div style={{ display: 'flex', height: '100vh', fontFamily: 'var(--font-body)' }}>
-
       {/* Sidebar list */}
       <div style={{
         width: 320, flexShrink: 0,
@@ -138,7 +137,6 @@ export default function HistoryPage() {
                 {selectedEntry.query}
               </h2>
 
-              {/* Final response */}
               {selectedEntry.response.final_response && (
                 <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, padding: 20, marginBottom: 16 }} className="report-content">
                   <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--accent)', marginBottom: 10, fontWeight: 600 }}>
@@ -148,7 +146,6 @@ export default function HistoryPage() {
                 </div>
               )}
 
-              {/* Agent reports */}
               <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: 10, fontWeight: 600 }}>
                 RAPPORTS DES AGENTS
               </div>
@@ -172,5 +169,17 @@ export default function HistoryPage() {
         )}
       </div>
     </div>
+  )
+}
+
+export default function HistoryPage() {
+  return (
+    <Suspense fallback={
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', color: 'var(--text-muted)' }}>
+        Chargement...
+      </div>
+    }>
+      <HistoryContent />
+    </Suspense>
   )
 }
